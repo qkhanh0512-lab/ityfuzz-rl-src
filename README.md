@@ -1,32 +1,49 @@
-# Description
-This directory contains source code of the project.
+## Bước 1: Khởi tạo môi trường Docker và cài công cụ
+Mở terminal trên máy host, khởi tạo container Rust và cài đặt Foundry:
 
-# Workflow
-todo
+```bash
+docker run -it --name ityfuzz_env -w /app rust:latest /bin/bash
+curl -L [https://foundry.paradigm.xyz](https://foundry.paradigm.xyz) | bash
+source ~/.bashrc
+foundryup
 
+Bước 2: Chuẩn bị 2 phân xưởng (Workspaces)
+Kéo mã nguồn ItyFuzz gốc về, sau đó nhân bản ra làm 2 thư mục riêng biệt (một bản giữ nguyên làm mốc đối chứng Baseline, một bản để cấy thuật toán RL):
 
-# Structure
+Bash
+git clone [https://github.com/fuzzland/ityfuzz.git](https://github.com/fuzzland/ityfuzz.git) ityfuzz_old
+cp -r ityfuzz_old ityfuzz_rl
 
-Folders: 
-- `generic_vm` - traits representing VM of any smart contracts
-- `evm` - Implementation of `generic_vm` for Ethereum Virtual Machine using revm. 
-- `move` - Implementation of `generic_vm` for MoveVM.
-- `fuzzers` - Definition of fuzzers for each VM.
+Bước 3: Build bản gốc (Baseline)
+Truy cập vào phân xưởng 1 và biên dịch bản cũ:
 
-Files:
-- `executor.rs` - definition of `Executor` trait from LibAFL.
-- `feedback.rs` - definition of `Feedback` trait from LibAFL for collecting and analyzing feedback like coverage and comparison.
-- `indexed_corpus.rs` - just a corpus that has self-increment ID for each testcase.
-- `input.rs` - definition of `Input` trait from LibAFL.
-- `oracle.rs` - definition of `Oracle` trait.
-- `scheduler.rs` - definition of `Scheduler` trait from LibAFL, implements infant scheduler proposed in paper.
-- `state.rs` - definition of `State` trait from LibAFL that supports infant corpus proposed in paper.
-- `state_input.rs` - implementation of `Input` trait for VM states.
-- `tracer.rs` - traces of the snapshot of the state, used for regenerating the transactions leading to the VM state.
+Bash
+cd ityfuzz_old
+cargo build --release
 
-Utils:
-- `rand_utils.rs` - random utilities.
-- `types.rs` - utilities for type conversion.
-- `telemetry.rs` - utilities for reporting fuzzing campaign telemetry information.
-- `const.rs` - constants used in the project.
+Bước 4: Cấy thuật toán RL và Build bản mới
+Quay lại thư mục gốc, tải lõi thuật toán RL từ Repository này và ghi đè vào phân xưởng 2:
 
+Bash
+cd /app
+git clone [https://github.com/qkhanh0512-lab/ityfuzz-rl-src.git](https://github.com/qkhanh0512-lab/ityfuzz-rl-src.git)
+cp -r ityfuzz-rl-src/* ityfuzz_rl/src/
+
+# Truy cập vào phân xưởng 2 để biên dịch bản RL
+cd ityfuzz_rl
+cargo build --release
+
+Bước 5: Phân loại và Khai hỏa
+Sau khi biên dịch xong, đưa 2 file thực thi ra ngoài thư mục /app và đổi tên để dễ dàng quản lý:
+
+Bash
+cp /app/ityfuzz_old/target/release/ityfuzz /app/ityfuzz_old_exe
+cp /app/ityfuzz_rl/target/release/ityfuzz /app/ityfuzz_rl_exe
+Cách chạy Fuzzer:
+Bây giờ trong thư mục /app đã có 2 file là ityfuzz_old_exe và ityfuzz_rl_exe. Bạn có thể tải dataset về và dùng 2 công cụ này chạy song song để kiểm thử Smart Contract.
+
+Lệnh chạy bản cũ:
+/app/ityfuzz_old_exe evm -m <đường_dẫn_contract> -- forge test
+
+Lệnh chạy bản mới (RL):
+/app/ityfuzz_rl_exe evm -m <đường_dẫn_contract> -- forge test
