@@ -1,4 +1,6 @@
-## Bước 1: Khởi tạo môi trường Docker và cài công cụ
+## Build
+
+Bước 1: Khởi tạo môi trường Docker và cài công cụ
 Mở terminal trên máy host, khởi tạo container Rust và cài đặt Foundry:
 
 ```bash
@@ -40,7 +42,7 @@ Bash
 cp /app/ityfuzz_old/target/release/ityfuzz /app/ityfuzz_old_exe
 cp /app/ityfuzz_rl/target/release/ityfuzz /app/ityfuzz_rl_exe
 Cách chạy Fuzzer:
-Bây giờ trong thư mục /app đã có 2 file là ityfuzz_old_exe và ityfuzz_rl_exe. Bạn có thể tải dataset về và dùng 2 công cụ này chạy song song để kiểm thử Smart Contract.
+Bây giờ trong thư mục /app đã có 2 file là ityfuzz_old_exe và ityfuzz_rl_exe. 
 
 Lệnh chạy bản cũ:
 /app/ityfuzz_old_exe evm -m <đường_dẫn_contract> -- forge test
