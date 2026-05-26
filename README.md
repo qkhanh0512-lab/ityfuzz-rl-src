@@ -1,9 +1,8 @@
 ## Build
-
+```bash
 Bước 1: Khởi tạo môi trường Docker và cài công cụ
 Mở terminal trên máy host, khởi tạo container Rust và cài đặt Foundry:
 
-```bash
 docker run -it --name ityfuzz_env -w /app rust:latest /bin/bash
 curl -L [https://foundry.paradigm.xyz](https://foundry.paradigm.xyz) | bash
 source ~/.bashrc
